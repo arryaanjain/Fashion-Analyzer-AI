@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import axios from 'axios'
-import { Send, Upload, X, Maximize2, Minimize2, Sparkles } from 'lucide-react'
+import { Send, Upload, X, Sparkles } from 'lucide-react'
 import ImageUpload from './ImageUpload'
 import ChatMessage from './ChatMessage'
 import TypingIndicator from './TypingIndicator'
@@ -23,7 +23,7 @@ interface ChatResponse {
   status: string
 }
 
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 const FashionAnalyzer = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -37,8 +37,15 @@ const FashionAnalyzer = () => {
   const [inputMessage, setInputMessage] = useState('')
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Cleanup fullscreen state on unmount
+  useEffect(() => {
+    return () => {
+      // Reset body overflow when component unmounts
+      document.body.style.overflow = ''
+    }
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -53,7 +60,10 @@ const FashionAnalyzer = () => {
       timestamp: new Date()
     }
     setMessages(prev => [...prev, newMessage])
-    setTimeout(scrollToBottom, 100)
+    // Only auto-scroll for user messages, not bot responses
+    if (sender === 'user') {
+      setTimeout(scrollToBottom, 100)
+    }
   }, [])
 
   const sendMessage = async () => {
@@ -114,117 +124,146 @@ const FashionAnalyzer = () => {
     }
   }
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen)
-  }
 
   const handleImagesSelected = (images: string[]) => {
     setUploadedImages(images)
   }
 
   return (
-    <div className={`flex flex-col transition-all duration-300 ${
-      isFullscreen 
-        ? 'fixed inset-0 z-50 bg-white' 
-        : 'max-w-4xl mx-auto my-8 bg-white rounded-2xl shadow-2xl overflow-hidden'
-    }`}>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-6 relative">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-pink-500" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Fashion Analyzer AI</h1>
-              <p className="text-pink-100 text-sm">Your personal styling assistant</p>
+    <div className="flex flex-col h-screen w-full bg-white">
+      {/* Header - Fixed height, responsive */}
+      <header className="flex-none bg-gradient-to-r from-pink-500 via-purple-500 to-pink-600 text-white shadow-lg">
+        <div className="px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo and Title */}
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight">Fashion AI</h1>
+                <p className="text-sm text-pink-100 hidden sm:block">Your Style Assistant</p>
+              </div>
             </div>
           </div>
-          <button
-            onClick={toggleFullscreen}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-          >
-            {isFullscreen ? (
-              <Minimize2 className="w-5 h-5" />
-            ) : (
-              <Maximize2 className="w-5 h-5" />
-            )}
-          </button>
         </div>
-      </div>
+      </header>
 
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 min-h-[400px] max-h-[500px]">
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
-        ))}
-        
-        {isLoading && <TypingIndicator />}
-        
-        <div ref={messagesEndRef} />
-      </div>
+      {/* Chat Messages Area - Flexible height with proper scrolling */}
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 space-y-4">
+          {messages.map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))}
+          
+          {isLoading && (
+            <div className="flex justify-start">
+              <TypingIndicator />
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
 
-      {/* Image Upload Area */}
-      {uploadedImages.length > 0 && (
-        <div className="p-4 bg-gray-50 border-t">
-          <div className="flex items-center space-x-2 mb-2">
-            <Upload className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600">Uploaded Images ({uploadedImages.length})</span>
+        {/* Image Upload Preview - Collapsible */}
+        {uploadedImages.length > 0 && (
+          <div className="flex-none px-4 py-3 bg-gray-50 border-t border-gray-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Upload className="w-4 h-4 text-gray-600" />
+              <span className="text-sm font-medium text-gray-700">
+                {uploadedImages.length} image{uploadedImages.length > 1 ? 's' : ''} ready
+              </span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {uploadedImages.map((image, index) => (
+                <div key={index} className="relative flex-none">
+                  <img
+                    src={image}
+                    alt={`Upload ${index + 1}`}
+                    className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border-2 border-gray-300 shadow-sm"
+                  />
+                  <button
+                    onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== index))}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex space-x-2 overflow-x-auto">
-            {uploadedImages.map((image, index) => (
-              <div key={index} className="relative flex-shrink-0">
-                <img
-                  src={image}
-                  alt={`Upload ${index + 1}`}
-                  className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
-                />
+        )}
+      </main>
+
+      {/* Input Area - Fixed at bottom, responsive */}
+      <footer className="flex-none bg-white border-t border-gray-200 shadow-lg">
+        <div className="px-4 py-4 sm:px-6">
+          {/* Mobile Layout */}
+          <div className="sm:hidden">
+            <div className="flex gap-2">
+              <textarea
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask about fashion or upload photos..."
+                className="flex-1 resize-none border-2 border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all"
+                rows={2}
+                disabled={isLoading}
+              />
+              <div className="flex flex-col gap-2">
+                <ImageUpload onImagesSelected={handleImagesSelected} isMobile={true} />
                 <button
-                  onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== index))}
-                  className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                  onClick={sendMessage}
+                  disabled={isLoading || (!inputMessage.trim() && uploadedImages.length === 0)}
+                  className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl"
                 >
-                  <X className="w-3 h-3" />
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                 </button>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Input Area */}
-      <div className="p-6 bg-gray-50 border-t">
-        <div className="flex space-x-4">
-          <ImageUpload onImagesSelected={handleImagesSelected} />
-          
-          <div className="flex-1 flex space-x-2">
-            <textarea
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask me about fashion, upload outfit photos, or get styling advice..."
-              className="flex-1 resize-none border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:outline-none transition-colors"
-              rows={2}
-              disabled={isLoading}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={isLoading || (!inputMessage.trim() && uploadedImages.length === 0)}
-              className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center min-w-[80px]"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </button>
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex items-end gap-4">
+            <div className="flex-none">
+              <ImageUpload onImagesSelected={handleImagesSelected} />
+            </div>
+            <div className="flex-1 flex gap-3">
+              <textarea
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask me about fashion, upload outfit photos, or get styling advice..."
+                className="flex-1 resize-none border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all"
+                rows={1}
+                disabled={isLoading}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={isLoading || (!inputMessage.trim() && uploadedImages.length === 0)}
+                className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl font-medium"
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Tips */}
+          <div className="mt-3 text-center">
+            <p className="text-xs text-gray-500">
+              💡 Upload photos or ask questions like "Does this look good?" or "What should I wear?"
+            </p>
           </div>
         </div>
-        
-        <div className="mt-3 text-xs text-gray-500 text-center">
-          💡 Tip: Upload multiple outfit photos or ask questions like "Does this look good together?" or "What should I wear to a party?"
-        </div>
-      </div>
+      </footer>
     </div>
   )
 }

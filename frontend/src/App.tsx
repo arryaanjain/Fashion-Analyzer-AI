@@ -3,7 +3,7 @@ import './App.css'
 
 function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
+    <div className="h-screen w-full">
       <FashionAnalyzer />
     </div>
   )
