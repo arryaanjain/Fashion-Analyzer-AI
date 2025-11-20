@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Bot, User } from 'lucide-react'
 
 interface Message {
@@ -15,47 +16,109 @@ interface ChatMessageProps {
 const ChatMessage = ({ message }: ChatMessageProps) => {
   const isBot = message.sender === 'bot'
 
-  const formatMessage = (text: string) => {
+  const formatMessage = (text: string): ReactNode[] => {
     // Convert markdown-style formatting to React elements
     const lines = text.split('\n')
+    const elements: ReactNode[] = []
+    let bulletList: string[] = []
     
-    return lines.map((line, index) => {
-      // Handle headers
-      if (line.startsWith('**') && line.endsWith('**')) {
-        return (
-          <h4 key={index} className="font-bold text-lg mt-3 mb-2 text-gray-800">
-            {line.slice(2, -2)}
+    const flushBulletList = () => {
+      if (bulletList.length > 0) {
+        elements.push(
+          <ul key={`list-${elements.length}`} className="list-disc ml-6 mb-3 space-y-1">
+            {bulletList.map((item, idx) => (
+              <li key={idx} className="text-gray-700">
+                {item}
+              </li>
+            ))}
+          </ul>
+        )
+        bulletList = []
+      }
+    }
+    
+    lines.forEach((line, index) => {
+      const trimmed = line.trim()
+      
+      // Handle markdown headers (###, ##, #)
+      if (trimmed.startsWith('###')) {
+        flushBulletList()
+        const headerText = trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, '')
+        elements.push(
+          <h4 key={index} className="font-bold text-base mt-4 mb-2 text-gray-900">
+            {headerText}
           </h4>
         )
+        return
       }
       
-      // Handle bullet points
-      if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
-        return (
-          <li key={index} className="ml-4 mb-1 text-gray-700">
-            {line.trim().substring(1).trim()}
-          </li>
+      if (trimmed.startsWith('##')) {
+        flushBulletList()
+        const headerText = trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, '')
+        elements.push(
+          <h3 key={index} className="font-bold text-lg mt-5 mb-3 text-gray-900">
+            {headerText}
+          </h3>
         )
+        return
       }
       
-      // Handle bold text
-      let formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      if (trimmed.startsWith('#')) {
+        flushBulletList()
+        const headerText = trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, '')
+        elements.push(
+          <h2 key={index} className="font-bold text-xl mt-6 mb-4 text-gray-900">
+            {headerText}
+          </h2>
+        )
+        return
+      }
       
-      // Handle italic text
+      // Handle bullet points and list items
+      if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
+        let itemText = trimmed.substring(1).trim()
+        
+        // Replace inline formatting
+        itemText = itemText.replace(/\*\*(.*?)\*\*/g, '$1')
+        itemText = itemText.replace(/\*(.*?)\*/g, '$1')
+        
+        bulletList.push(itemText)
+        return
+      }
+      
+      // Flush bullet list if we hit a non-list line
+      if (bulletList.length > 0 && trimmed !== '') {
+        flushBulletList()
+      }
+      
+      // Handle empty lines
+      if (trimmed === '') {
+        elements.push(<br key={index} />)
+        return
+      }
+      
+      // Handle regular text with formatting
+      let formattedLine = line
+      
+      // Replace bold text
+      formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      
+      // Replace italic text
       formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
       
-      if (line.trim() === '') {
-        return <br key={index} />
-      }
-      
-      return (
+      elements.push(
         <p 
           key={index} 
-          className="mb-2 text-gray-700 leading-relaxed"
+          className="mb-3 text-gray-700 leading-relaxed"
           dangerouslySetInnerHTML={{ __html: formattedLine }}
         />
       )
     })
+    
+    // Flush any remaining bullet list
+    flushBulletList()
+    
+    return elements
   }
 
   return (
@@ -63,7 +126,7 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
       <div className={`flex max-w-[80%] ${isBot ? 'flex-row' : 'flex-row-reverse'} items-start space-x-3`}>
         {/* Avatar */}
         <div className={`
-          w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+          w-10 h-10 rounded-full flex items-center justify-center shrink-0
           ${isBot ? 'bg-gradient-to-br from-pink-500 to-purple-600 text-white' : 'bg-gray-200 text-gray-600'}
         `}>
           {isBot ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}

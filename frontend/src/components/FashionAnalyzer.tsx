@@ -4,6 +4,7 @@ import { Send, Upload, X, Sparkles } from 'lucide-react'
 import ImageUpload from './ImageUpload'
 import ChatMessage from './ChatMessage'
 import TypingIndicator from './TypingIndicator'
+import Toast from './Toast'
 
 interface Message {
   id: string
@@ -29,7 +30,7 @@ const FashionAnalyzer = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Hi! I\'m your Fashion Analyzer AI! 👗✨ Upload photos of your outfits or ask me fashion questions - I\'m here to help you look amazing!',
+      text: '✨ Welcome to Stylette! I\'m your AI fashion stylist. Upload outfit photos or ask me fashion questions - I\'m here to help you look absolutely stunning! 👗✨',
       sender: 'bot',
       timestamp: new Date()
     }
@@ -37,6 +38,7 @@ const FashionAnalyzer = () => {
   const [inputMessage, setInputMessage] = useState('')
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Cleanup fullscreen state on unmount
@@ -94,8 +96,11 @@ const FashionAnalyzer = () => {
 
       if (response.data.response) {
         addMessage(response.data.response, 'bot')
+        setToastMessage({ text: '✨ Stylette Analysis Complete!', type: 'success' })
+        setTimeout(scrollToBottom, 100)
       } else {
         addMessage('I apologize, but I encountered an issue processing your request. Please try again!', 'bot')
+        setToastMessage({ text: '⚠️ No analysis received', type: 'error' })
       }
     } catch (error) {
       console.error('Chat error:', error)
@@ -123,6 +128,7 @@ const FashionAnalyzer = () => {
       }
       
       addMessage(errorMessage, 'bot')
+      setToastMessage({ text: '⚠️ Stylette Connection Issue', type: 'error' })
     } finally {
       setIsLoading(false)
     }
@@ -152,8 +158,8 @@ const FashionAnalyzer = () => {
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight">Fashion AI</h1>
-                <p className="text-sm text-pink-100 hidden sm:block">Your Style Assistant</p>
+                <h1 className="text-xl font-bold tracking-tight">Stylette</h1>
+                <p className="text-sm text-pink-100 hidden sm:block">Your AI Fashion Stylist</p>
               </div>
             </div>
           </div>
@@ -270,11 +276,21 @@ const FashionAnalyzer = () => {
           {/* Tips */}
           <div className="mt-3 text-center">
             <p className="text-xs text-gray-500">
-              💡 Upload photos or ask questions like "Does this look good?" or "What should I wear?"
+              💡 Stylette Tip: Upload photos or ask questions like "Does this look good?" or "What should I wear?"
             </p>
           </div>
         </div>
       </footer>
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <Toast
+          message={toastMessage.text}
+          type={toastMessage.type}
+          duration={3000}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
     </div>
   )
 }
