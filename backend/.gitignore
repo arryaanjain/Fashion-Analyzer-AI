@@ -96,3 +96,7 @@ secrets.json
 config.json
 *.pem
 *.key
+
+# Metadata and cache files
+.metadata_cache/
+*.cache
