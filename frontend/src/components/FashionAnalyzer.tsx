@@ -149,7 +149,7 @@ const FashionAnalyzer = () => {
   return (
     <div className="flex flex-col h-screen w-full bg-white">
       {/* Header - Fixed height, responsive */}
-      <header className="flex-none bg-gradient-to-r from-pink-500 via-purple-500 to-pink-600 text-white shadow-lg">
+      <header className="flex-none text-white shadow-lg" style={{backgroundColor: '#4c1207'}}>
         <div className="px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo and Title */}
@@ -232,7 +232,8 @@ const FashionAnalyzer = () => {
                 <button
                   onClick={sendMessage}
                   disabled={isLoading || (!inputMessage.trim() && uploadedImages.length === 0)}
-                  className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl"
+                  className="w-12 h-12 text-white rounded-xl hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl"
+                  style={{backgroundColor: '#4c1207'}}
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -262,7 +263,8 @@ const FashionAnalyzer = () => {
               <button
                 onClick={sendMessage}
                 disabled={isLoading || (!inputMessage.trim() && uploadedImages.length === 0)}
-                className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl font-medium"
+                className="px-6 py-3 text-white rounded-xl hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl font-medium"
+                style={{backgroundColor: '#4c1207'}}
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
