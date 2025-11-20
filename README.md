@@ -1,16 +1,16 @@
-# Fashion Analyzer AI - Dataset-Powered Fashion Assistant
+# Stylette - AI Fashion Stylist
 
-An intelligent fashion analysis system that combines **Google Gemini AI** with **real dataset processing** to provide personalized styling recommendations based on your actual fashion image collection.
+An intelligent personal fashion styling assistant that combines **Google Gemini AI** with **real dataset processing** to provide personalized styling recommendations based on your actual fashion image collection.
 
-## 🌟 What's New - Dataset Integration
+## 🌟 What is Stylette?
 
-**Your Fashion Analyzer now actually uses your datasets!**
+**Your Personal AI Fashion Stylist - Powered by Real Data**
 
-- ✅ **104 real fashion images** from your collection analyzed
-- ✅ **Body metrics CSV** with 1000+ profiles integrated  
-- ✅ **Real-time color extraction** using computer vision
-- ✅ **Smart outfit matching** against your dataset
-- ✅ **NLP-powered** understanding of fashion queries
+- ✨ **Analyze outfit photos** instantly
+- ✨ **Get personalized styling advice** tailored to your preferences  
+- ✨ **Color analysis & recommendations** using advanced computer vision
+- ✨ **Find similar styles** from 100+ curated fashion images
+- ✨ **Smart matching** against body metrics & color science data
 
 ## 🏗️ System Architecture
 
@@ -19,7 +19,7 @@ Frontend (React + Tailwind) ← → FastAPI Backend ← → Dataset Processor
                                         ↓
                             Google Gemini AI + Your Datasets
                                    ↓
-                        Enhanced Recommendations
+                        Stylette Personalized Recommendations
 ```
 
 ## 📊 Datasets Currently Integrated
@@ -39,16 +39,16 @@ Frontend (React + Tailwind) ← → FastAPI Backend ← → Dataset Processor
    - 10 standardized clothing types
    - Enhanced classification accuracy
 
-## 🚀 Features
+## ✨ Features
 
-### **Image Analysis with Dataset Integration**
+### **Outfit Analysis with Dataset Integration**
 - **Color Extraction**: Real-time dominant color analysis using OpenCV
-- **Similar Outfit Matching**: Finds matches from your 104-image collection
+- **Similar Style Matching**: Finds matches from curated collection
 - **Body Metrics Integration**: Color recommendations from actual data
 - **Style Classification**: Ethnic vs Western wear detection
 
-### **Enhanced AI Responses**
-- **Dataset Context**: AI responses reference your actual collection
+### **Enhanced AI Styling Responses**
+- **Dataset Context**: Stylette references your actual collection
 - **Personalized Advice**: Based on your specific image metadata
 - **Smart Matching**: "Found 8 similar outfits in your collection"
 - **Color Science**: Recommendations backed by body metrics data
