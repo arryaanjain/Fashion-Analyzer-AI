@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
-import { Bot, User } from 'lucide-react'
+import { Bot, User, Copy, Check } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
 
 interface Message {
   id: string
@@ -225,65 +227,120 @@ const formatUserMessage = (text: string): ReactNode[] => {
 
 // Bot Message Component
 const BotMessage = ({ message }: ChatMessageProps) => {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
-    <div className="flex justify-start mb-4">
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex justify-start mb-4"
+    >
       <div className="flex max-w-[80%] flex-row items-start space-x-3">
         {/* Bot Avatar */}
-        <div 
-          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white"
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white shadow-lg"
           style={{backgroundColor: '#4c1207'}}
         >
           <Bot className="w-5 h-5" />
-        </div>
+        </motion.div>
 
         {/* Bot Message Content */}
-        <div className="rounded-2xl px-4 py-3 shadow-sm bg-white border border-gray-200">
-          {/* Images */}
-          {message.images && message.images.length > 0 && (
-            <div className="mb-3">
-              <div className="grid grid-cols-2 gap-2 max-w-xs">
-                {message.images.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image}
-                    alt={`Upload ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                  />
-                ))}
+        <div className="relative group">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-2xl px-4 py-3 shadow-md hover:shadow-lg transition-shadow bg-white border border-gray-200"
+          >
+            {/* Images */}
+            {message.images && message.images.length > 0 && (
+              <div className="mb-3">
+                <div className="grid grid-cols-2 gap-2 max-w-xs">
+                  {message.images.map((image, index) => (
+                    <motion.img
+                      key={index}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3 + index * 0.1 }}
+                      src={image}
+                      alt={`Upload ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg border border-gray-200 hover:border-pink-400 transition-colors"
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Text Content */}
-          {message.text && (
-            <div className="prose prose-sm max-w-none text-gray-700">
-              {formatBotMessage(message.text)}
-            </div>
-          )}
+            {/* Text Content */}
+            {message.text && (
+              <div className="prose prose-sm max-w-none text-gray-700">
+                {formatBotMessage(message.text)}
+              </div>
+            )}
 
-          {/* Timestamp */}
-          <div className="text-xs mt-2 text-gray-400">
-            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </div>
+            {/* Timestamp and Copy Button */}
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-xs text-gray-400">
+                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleCopy}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded"
+                title="Copy message"
+              >
+                {copied ? (
+                  <Check className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </motion.button>
+            </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
 // User Message Component
 const UserMessage = ({ message }: ChatMessageProps) => {
   return (
-    <div className="flex justify-end mb-4">
-      <div className="flex max-w-[80%] flex-row-reverse items-start space-x-3">
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex justify-end mb-4"
+    >
+      <div className="flex max-w-[80%] flex-row-reverse items-start space-x-3 space-x-reverse">
         {/* User Avatar */}
-        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-gray-200 text-gray-600">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-gradient-to-br from-pink-500 to-purple-500 text-white shadow-lg"
+        >
           <User className="w-5 h-5" />
-        </div>
+        </motion.div>
 
         {/* User Message Content */}
-        <div 
-          className="rounded-2xl px-4 py-3 shadow-sm text-white"
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-2xl px-4 py-3 shadow-md hover:shadow-lg transition-shadow text-white"
           style={{backgroundColor: '#4c1207'}}
         >
           {/* Images */}
@@ -291,11 +348,14 @@ const UserMessage = ({ message }: ChatMessageProps) => {
             <div className="mb-3">
               <div className="grid grid-cols-2 gap-2 max-w-xs">
                 {message.images.map((image, index) => (
-                  <img
+                  <motion.img
                     key={index}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 + index * 0.1 }}
                     src={image}
                     alt={`Upload ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                    className="w-full h-32 object-cover rounded-lg border-2 border-white/20 hover:border-white/40 transition-colors"
                   />
                 ))}
               </div>
@@ -310,12 +370,12 @@ const UserMessage = ({ message }: ChatMessageProps) => {
           )}
 
           {/* Timestamp */}
-          <div className="text-xs mt-2 text-white">
+          <div className="text-xs mt-2 text-white/70">
             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
